@@ -2,8 +2,8 @@
 //  main.cpp
 //  Calculating waiting time
 //
-//  Created by WillJia on 2018-10-09.
-//  Copyright © 2018 WillJia. All rights reserved.
+//  Created by Zesheng Jia on 2018-10-09.
+//  Copyright © 2018 Zesheng Jia. All rights reserved.
 //
 
 /************************************************************************************
@@ -35,9 +35,9 @@ vector<int> numbers;
 
 /************************************************************************
  
- Function:        calculate_FCFS_waiting_time
+ Function:        calculate_sum
  
- Description:     get average number
+ Description:     calculate sum from beginning to end_index
  
  *************************************************************************/
 

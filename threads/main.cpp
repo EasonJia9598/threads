@@ -179,10 +179,10 @@ int main(int argc, char *argv[]) {
     
     // start to create 5 pthread with specific functions
     pthread_create(&tid[0], &attr, average, NULL);
-    pthread_create(&tid[0], &attr, minimum, NULL);
-    pthread_create(&tid[0], &attr, maximum, NULL);
-    pthread_create(&tid[0], &attr, median, NULL);
-    pthread_create(&tid[0], &attr, standard_deviation, NULL);
+    pthread_create(&tid[1], &attr, minimum, NULL);
+    pthread_create(&tid[2], &attr, maximum, NULL);
+    pthread_create(&tid[3], &attr, median, NULL);
+    pthread_create(&tid[4], &attr, standard_deviation, NULL);
     
     // join threads
     for (int i = 0; i < 5 ; i++) {
