@@ -29,7 +29,7 @@ using namespace std;
 float average_value = 0;
 int minimum_value = 0;
 int maximum_value = 0;
-int median_value = 0;
+float median_value = 0;
 float standard_deviation_value= 0;
 
 // array container
@@ -105,7 +105,11 @@ void *median(void *param) {
     vector<int> temp = numbers;
     sort(temp.begin(), temp.end());
     
-    median_value = temp[size / 2];
+    if (size %2 == 0) {
+        median_value = (temp[size/2 - 1] + temp[size / 2]) / 2.0 ;
+    }else{
+        median_value = temp[size / 2];
+    }
     pthread_exit(0);
 }
 
@@ -141,11 +145,18 @@ void *standard_deviation(void *param) {
  
  *************************************************************************/
 void printValue(){
+    unsigned long size = numbers.size();
     cout << "The program will report" << endl;
     cout << "The average value is " << fixed << setprecision(2) << average_value << endl;
     cout << "The minimum value is " << minimum_value << endl;
     cout << "The maximum value is " << maximum_value << endl;
-    cout << "The median value is " << median_value  << endl;
+    cout << "The median value is ";
+    if (size%2 == 0) {
+        cout << numbers[size/2 - 1] << " and " << numbers[size/2] << "'s average number = " << median_value;
+    }else{
+        cout << median_value  ;
+    }
+    cout << endl;
     cout << "The standard deviation is "<< standard_deviation_value << endl;
     
 }
