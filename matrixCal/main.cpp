@@ -158,17 +158,10 @@ void *calculateMatrix(void *param) {
     int index = m1->indexOfRow;
     vector<int> row1 = m1->matrix1;
     vector<int> row2 = m1->matrix2;
-    vector<int> sum;
     
-    int count = 0;
-    
-    for (int n : row1) {
-        sum.push_back(row1[count] + row2[count]);
-        count++;
+    for (int i = 0; i < row1.size(); i++) {
+        m1->result->array[index][i] = row2[i] + row1[i];
     }
-    
-    m1->result->array[index].insert(sum.begin(), sum.size());
-    
     pthread_exit(0);
     
 }
@@ -195,9 +188,9 @@ void *obtainMatrix(void *param) {
  Description:     print the 2 values
  
  *************************************************************************/
-void printValue(initMatrix matrice[3]){
+void printValue(initMatrix matrice){
     cout << "The Resulting matrix  is " << endl;
-    for(vector<int> arr : matrice[2].array){
+    for(vector<int> arr : matrice.array){
         for(int n : arr){
             cout << n << " ";
         }
@@ -209,7 +202,7 @@ void printValue(initMatrix matrice[3]){
 
 int main(int argc, char *argv[]) {
 
-    initMatrix matrice[3];
+    initMatrix matrice[2];
     additionMatrix additionMatrix[4];
     
     // initialize 6 pthread
@@ -219,7 +212,6 @@ int main(int argc, char *argv[]) {
     
     matrice[0].filename = "/Users/WillJia/Desktop/IOS Lecture/Projects/threads/matrixCal/file1.txt";
     matrice[1].filename = "/Users/WillJia/Desktop/IOS Lecture/Projects/threads/matrixCal/file2.txt";
-    matrice[2].filename = "result";
 
     // start to create 2 pthread to obtain matrix
     pthread_create(&tid[0], &attr, obtainMatrix, &matrice[0]);
@@ -230,12 +222,14 @@ int main(int argc, char *argv[]) {
         pthread_join(tid[i], NULL);
     }
 
-//
-    for (int i = 0; i < 4; i++) {
+    
+    initMatrix result = matrice[1];
+
+    for (int i = 0; i < numberOfRow; i++) {
         additionMatrix[i].indexOfRow = i;
         additionMatrix[i].matrix1 = matrice[0].array[i];
         additionMatrix[i].matrix2 = (matrice[1].array[i]);
-        additionMatrix[i].result = &matrice[2];
+        additionMatrix[i].result = &result;
     }
     
 
@@ -255,6 +249,6 @@ int main(int argc, char *argv[]) {
         pthread_join(tid[i], NULL);
     }
     
-    printValue(matrice);
+    printValue(result);
 }
 
