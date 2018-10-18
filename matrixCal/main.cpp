@@ -38,17 +38,20 @@ struct initMatrix{
 
 struct additionMatrix{
     // calculate No. index of row
-    int indexOfRow;
+    int start;
+    int end;
+    
     // array container
-    vector<int> matrix1;
-    vector<int> matrix2;
+    initMatrix *matrix1;
+    initMatrix *matrix2;
     initMatrix *result;
     
 };
 
 // number of rows
 int numberOfRow;
-
+// number of column
+int numberOfColumn;
 /************************************************************************
  
  Tool Functions
@@ -91,11 +94,14 @@ vector<int> arrayConvert(string content){
     vector<string> numbers ;
     split(content, ' ', numbers);
     int i = 0;
+    int count = 0;
     for(string n : numbers){
         stringstream geek(n);
         geek >> i;
         array.push_back(i);
+        count++;
     }
+    numberOfColumn = count;
     return array;
 }
 //https://www.geeksforgeeks.org/converting-strings-numbers-cc/
@@ -113,7 +119,6 @@ vector <vector<int>> readContent(string filename){
     string line;
     vector <vector<int>> array;
     int count = 0;
-    
     ifstream myfile (filename);
     if (myfile.is_open()) {
         while (getline(myfile,line)) {
@@ -154,14 +159,23 @@ vector <vector<int>> processFile(string filename){
  *************************************************************************/
 
 void *calculateMatrix(void *param) {
+    // get *param as struct and convert to additionMatrix
     additionMatrix *m1 = (additionMatrix*)param;
-    int index = m1->indexOfRow;
-    vector<int> row1 = m1->matrix1;
-    vector<int> row2 = m1->matrix2;
+
     
-    for (int i = 0; i < row1.size(); i++) {
-        m1->result->array[index][i] = row2[i] + row1[i];
+    // calculate rows from [start] to [end]
+    for (int j = m1->start; j < m1->end; j++) {
+        // add 2 matrice value and save into result matrix
+        // get matrix 1's row
+        vector<int> row1 = m1->matrix1->array[j];
+        // get matrix 2's row
+        vector<int> row2 = m1->matrix2->array[j];
+        
+        for (int i = 0; i < row1.size(); i++) {
+            m1->result->array[j][i] = row2[i] + row1[i];
+        }
     }
+  
     pthread_exit(0);
     
 }
@@ -176,8 +190,25 @@ void *calculateMatrix(void *param) {
  *************************************************************************/
 void *obtainMatrix(void *param) {
     initMatrix *ma = (initMatrix*)param; // change void to stuct
+    // read content from file
     ma->array = processFile(ma->filename);
     pthread_exit(0);
+}
+
+/************************************************************************
+ 
+ Function:        printMatrix
+ 
+ Description:     print the matrix
+ 
+ *************************************************************************/
+void printMatrix(initMatrix matrice){
+    for(vector<int> arr : matrice.array){
+        for(int n : arr){
+            cout << n << " ";
+        }
+        cout << endl;
+    }
 }
 
 
@@ -188,21 +219,21 @@ void *obtainMatrix(void *param) {
  Description:     print the 2 values
  
  *************************************************************************/
-void printValue(initMatrix matrice){
+void printValue(initMatrix matrice[3]){
+    
+    cout << "File 1:" << endl;
+    printMatrix(matrice[0]);
+    cout << "File 2:" << endl;
+    printMatrix(matrice[1]);
     cout << "The Resulting matrix  is " << endl;
-    for(vector<int> arr : matrice.array){
-        for(int n : arr){
-            cout << n << " ";
-        }
-        cout << endl;
-    }
+    printMatrix(matrice[2]);
 }
 
 
 
 int main(int argc, char *argv[]) {
 
-    initMatrix matrice[2];
+    initMatrix matrice[3];
     additionMatrix additionMatrix[4];
     
     // initialize 6 pthread
@@ -210,9 +241,12 @@ int main(int argc, char *argv[]) {
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     
+//    matrice[0].filename = "/home/student/z_jia/HW5/file1.txt";
+//    matrice[1].filename = "/home/student/z_jia/HW5/file2.txt";
+
     matrice[0].filename = "/Users/WillJia/Desktop/IOS Lecture/Projects/threads/matrixCal/file1.txt";
     matrice[1].filename = "/Users/WillJia/Desktop/IOS Lecture/Projects/threads/matrixCal/file2.txt";
-
+    
     // start to create 2 pthread to obtain matrix
     pthread_create(&tid[0], &attr, obtainMatrix, &matrice[0]);
     pthread_create(&tid[1], &attr, obtainMatrix, &matrice[1]);
@@ -222,33 +256,49 @@ int main(int argc, char *argv[]) {
         pthread_join(tid[i], NULL);
     }
 
-    
-    initMatrix result = matrice[1];
+    // initialize result matrice
+    matrice[2].array.resize(numberOfRow);
+    for (int i = 0 ; i < numberOfRow; i++) {
+        matrice[2].array[i].resize(numberOfColumn);
+    }
 
-    for (int i = 0; i < numberOfRow; i++) {
-        additionMatrix[i].indexOfRow = i;
-        additionMatrix[i].matrix1 = matrice[0].array[i];
-        additionMatrix[i].matrix2 = (matrice[1].array[i]);
-        additionMatrix[i].result = &result;
+    // set gap for start and end
+    int gap = numberOfRow / 4;
+    // prevent for number of Row less than 4 and invoke empty thread
+    int numberOfThreadCreate;
+    if (gap == 0) {
+        numberOfThreadCreate = numberOfRow;
+        gap = 1;
+    }else{
+        numberOfThreadCreate = 4;
     }
     
-
+    int prev = 0 , newv = gap;
+    for (int i = 0; i < numberOfThreadCreate; i++) {
+        additionMatrix[i].start = prev;
+        additionMatrix[i].end = (i + 1 == numberOfThreadCreate) ? numberOfRow  : newv ;
+        prev = newv;
+        newv += gap;
+        additionMatrix[i].matrix1 = &matrice[0];
+        additionMatrix[i].matrix2 = &matrice[1];
+        additionMatrix[i].result = &matrice[2];
+    }
     
+ 
     
 
-//    // start to create 4 pthreads to calculate two matrice's addition
+    // start to create 4 pthreads to calculate two matrice's addition
     pthread_create(&tid[2], &attr, calculateMatrix, &additionMatrix[0]);
     pthread_create(&tid[3], &attr, calculateMatrix, &additionMatrix[1]);
     pthread_create(&tid[4], &attr, calculateMatrix, &additionMatrix[2]);
     pthread_create(&tid[5], &attr, calculateMatrix, &additionMatrix[3]);
-//
-//
-    
+
     // join threads
     for (int i = 2; i < 6 ; i++) {
         pthread_join(tid[i], NULL);
     }
     
-    printValue(result);
+    printValue(matrice);
+    
 }
 
