@@ -31,10 +31,6 @@ void test(int phnum)
         
         printf("Philosopher %d is Eating\n", phnum + 1);
         
-        // sem_post(&S[phnum]) has no effect
-        // during takefork
-        // used to wake up hungry philosophers
-        // during putfork
         sem_post(&S[phnum]);
     }
 }

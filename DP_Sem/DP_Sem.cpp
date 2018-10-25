@@ -19,14 +19,18 @@
 
 using namespace std;
 sem_t sem[5];
-string state[5];
+#define THINKING 2
+#define EATING 0
+
+int state[5];
+string stateStr[3] = {"EATING", "HUNGRY" , "THINKING"} ;
 
 int randomTime(){
     return rand() % 3 + 1;
 }
 void think(int i ){
     printf("P %d is thinking\n" , i);
-    state[i - 1] = "thinking";
+    state[i - 1] = THINKING;
     int time = randomTime();
 //    printf("   %d \n" , time);
     sleep(time);
@@ -34,7 +38,7 @@ void think(int i ){
 
 void eat(int i ){
     printf("P %d is eating\n" , i);
-    state[i - 1] = "eating";
+    state[i - 1] = EATING;
     int time = randomTime();
 //    printf("   %d \n" , time);
     sleep(time);
@@ -62,9 +66,9 @@ void *printState(void *param){
         }
         printf("[");
         for (int i = 0; i < 4; i++) {
-            printf("P %d : %s , " , i + 1 , state[i].c_str());
+            printf("P %d : %s , " , i + 1 , stateStr[state[i]].c_str());
         }
-        printf("P %d : %s ]\n" , (int)5 , state[4].c_str());
+        printf("P %d : %s ]\n" , (int)5 , stateStr[state[4]].c_str());
         sleep(5);
         for (int i = 0 ; i < 5; i++) {
             sem_post(&sem[i]);
